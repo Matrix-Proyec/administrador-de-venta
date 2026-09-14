@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>El Chamo - Matriz Inquilino Sede</title>
+  <!-- Iconos Profesionales FontAwesome -->
+  <link rel="stylesheet" href="https://cloudflare.com">
+  
+  <style>
+    :root {
+      --bg-plasma: linear-gradient(180deg, #020308 0%, #070d22 50%, #010206 100%);
+      --glass-card: rgba(15, 23, 42, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --neon-cyan: #00f2fe;
+      --neon-blue: #0ea5e9;
+      --neon-crimson: #ff2a5f;
+      --neon-emerald: #10b981;
+      --neon-amber: #ffb703;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-plasma);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAVBAR COMPACTA INQUILINO */
+    .navbar {
+      background: rgba(4, 6, 14, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--neon-blue);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .info-admin {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    .info-admin h2 {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .info-admin span {
+      font-size: 0.7rem;
+      color: var(--neon-blue);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .antena-central {
+      background: rgba(14, 165, 233, 0.12);
+      color: #38bdf8;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    /* PESTAÑAS DE NAVEGACIÓN COMPACTAS */
+    .menu-tabs {
+      display: flex;
+      flex-direction: row;
+      background: rgba(4, 6, 14, 0.8);
+      border-bottom: 1px solid var(--glass-border);
+      overflow-x: auto;
+      white-space: nowrap;
+      position: sticky;
+      top: 50px;
+      z-index: 90;
+      scrollbar-width: none;
+    }
+    .menu-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      padding: 14px 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--neon-blue);
+      border-bottom-color: var(--neon-blue);
+      background: rgba(14, 165, 233, 0.04);
+      text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+    }
+
+    /* CONTENEDOR GENERAL */
+    .container-contenido {
+      padding: 12px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .modulo-seccion {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modulo-seccion.active { display: flex; }
+
+    .grid-paneles-config {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 1024px) {
+      .grid-paneles-config { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* TARJETAS ESTILO CRISTAL */
+    .card {
+      background: var(--glass-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+    }
+
+    .card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ==========================================
+       🚫 ESTILOS PARA OPCIONES SUSPENDIDAS (CANDADO)
+       ========================================== */
+    .opcion-suspendida {
+      opacity: 0.4; /* Opacidad sutil */
+      pointer-events: none; /* Inhabilitado para hacer clics */
+      user-select: none;
+    }
+    
+    .candado-alerta {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: rgba(255, 42, 95, 0.15);
+      border: 1px solid var(--neon-crimson);
+      color: var(--neon-crimson);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* TABLAS OPTIMIZADAS CON SCROLL HORIZONTAL ELÁSTICO */
+    .monitor-tabla-maestra {
+      background: rgba(4, 5, 12, 0.96);
+      border: 2px solid rgba(14, 165, 233, 0.15);
+      border-radius: 16px;
+      overflow-x: auto; /* Deslizamiento elástico horizontal */
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 800px; /* Impide que las columnas se aplasten en móviles */
+    }
+
+    th {
+      background: linear-gradient(180deg, #0a0e1a 0%, #03050c 100%); padding: 14px 10px;
+      font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--neon-blue); border-bottom: 2px solid rgba(14, 165, 233, 0.2);
+    }
+    td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); font-size: 0.85rem; font-weight: 600; }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.01); }
+
+    .btn-central {
+      border: none; color: #ffffff; padding: 12px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+    }
+    .btn-azul { background: linear-gradient(135deg, #0284c7 0%, var(--neon-blue) 100%); }
+
+    .footer-copyright {
+      font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-align: center; margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR INQUILINO -->
+  <div class="navbar">
+    <div class="info-admin">
+      <h2 id="txt-inquilino-bodega">MONITOREO DE SEDE</h2>
+      <span>Matriz Inquilino Limitada</span>
+    </div>
+    <div class="antena-central" id="antena-matriz">
+      <i class="fas fa-satellite-dish"></i> <span id="txt-status-servidor">CONECTADO A CENTRAL</span>
+    </div>
+  </div>
+
+  <!-- MENU DE OPCIONES -->
+  <div class="menu-tabs">
+    <button class="tab-btn active" onclick="cambiarPestañaMatriz(this, 'sec-general')"><i class="fas fa-chart-pie"></i> Mi Panel</button>
+    <button class="tab-btn" onclick="cambiarPestañaMatriz(this, 'sec-inventario')"><i class="fas fa-boxes"></i> Mi Inventario</button>
+    <button class="tab-btn" onclick="cambiarPestañaMatriz(this, 'sec-tickets')"><i class="fas fa-receipt"></i> Mis Tickets</button>
+    <button class="tab-btn" style="color: var(--neon-blue);" onclick="forzarRefrescoDeDatos()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+  </div>
+
+  <!-- CUERPO DE CONTENIDOS -->
+  <div class="container-contenido">
+
+    <!-- PESTAÑA 1: MI PANEL -->
+    <div id="sec-general" class="modulo-seccion active">
+      <div class="grid-paneles-config">
+        
+        <!-- PANEL VERIFICADOR: EXCLUSIVO INQUILINO -->
+        <div class="card">
+          <h3><i class="fas fa-store-alt"></i> Estatus de mi Sucursal</h3>
+          <div style="padding: 10px 0; display:flex; flex-direction:column; gap:8px;">
+            <p style="font-size:0.9rem; color:var(--text-main);">Tasa BCV del Día: <span id="lbl-tasa-bcv" style="color:var(--neon-amber); font-weight:800;">0.00 Bs/$</span></p>
+            <p style="font-size:0.9rem; color:var(--text-main);">Mi ID de Caja asignado: <span id="lbl-caja-id" style="color:var(--neon-cyan); font-weight:800;">...</span></p>
+          </div>
+        </div>
+
+        <!-- PANEL ADVERTENCIA SUSPENDIDO VISUALMENTE -->
+        <div class="card opcion-suspendida">
+          <div class="candado-alerta"><i class="fas fa-lock"></i> Exclusivo Máster</div>
+          <h3><i class="fas fa-money-bill-trend-up"></i> Gestión Cambiaria Central</h3>
+          <div class="form-group">
+            <label>Tasa del Dólar Actual (Bs/$):</label>
+            <input type="number" value="45.00" disabled>
+          </div>
+          <button class="btn-central btn-azul"><i class="fas fa-ban"></i> Función Suspendida</button>
+        </div>
+
+      </div>
+    </div>
+
+      <!-- PESTAÑA 2: MI INVENTARIO PROPIO (FILTRADO) -->
+    <div id="sec-inventario" class="modulo-seccion">
+      <div class="card">
+        <h3><i class="fas fa-boxes"></i> Catálogo Físico de Existencias en mi Estante</h3>
+        <div class="monitor-tabla-maestra">
+          <table>
+            <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>DESCRIPCIÓN DE LA MERCANCÍA</th>
+                <th>MÓDULO</th>
+                <th style="text-align: right;">PRECIO ($)</th>
+                <th style="text-align: center;">STOCK ACTUAL</th>
+                <th>ESTATUS ALMACÉN</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-inventario-inquilino">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Descargando existencias asignadas a tu sede...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: MIS TICKETS DE VENTA -->
+    <div id="sec-tickets" class="modulo-seccion">
+      <div class="card">
+        <h3><i class="fas fa-history"></i> Reporte Contable de Facturas de mi Turno</h3>
+        <div class="monitor-tabla-maestra">
+          <table>
+            <thead>
+              <tr>
+                <th>ID FACTURA</th>
+                <th>TICKET</th>
+                <th>MÓDULO</th>
+                <th>FECHA / HORA</th>
+                <th style="text-align: right;">TOTAL ($)</th>
+                <th style="text-align: right;">TOTAL (BS)</th>
+                <th>MÉTODO PAGO</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-ventas-inquilino">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted);">Sincronizando tus facturas transaccionales...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- Cierre container-contenido -->
+
+  <!-- PIE DE PÁGINA PROFESIONAL EXIGIDO -->
+  <div class="footer-copyright">
+    © RJ-Profecional | 2026 todos los derechos reservados
+  </div>
+
+  <!-- MOTOR LOGÍSTICO EXCLUSIVO INQUILINO -->
+  <script>
+    let INQUILINO_CONFIG = {
+      URL_API: " https://script.google.com/macros/s/AKfycbyK_Du1ZgtK-ceGIeZQua6feLtvj_lCc_fp2pYtn27Vvnwqciwh-1OVOlF1g98Ncnw-bQ/exec",
+      SUCURSAL_ID: "DRON-01"
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const sesion = localStorage.getItem('CHAMO_SESION');
+      if (sesion) {
+        const parsed = JSON.parse(sesion);
+        INQUILINO_CONFIG.SUCURSAL_ID = parsed.sucursalAsignada || "DRON-01";
+      }
+      solicitudDescargaFiltradaInquilino();
+    });
+
+    function cambiarPestañaMatriz(boton, seccionId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => boton !== btn ? btn.classList.remove('active') : btn.classList.add('active'));
+      document.querySelectorAll('.modulo-seccion').forEach(sec => sec.id !== seccionId ? sec.classList.remove('active') : sec.classList.add('active'));
+    }
+
+    function solicitudDescargaFiltradaInquilino() {
+      if (!navigator.onLine) return;
+
+      fetch(INQUILINO_CONFIG.URL_API)
+        .then(res => res.json())
+        .then(respuesta => {
+          if (respuesta.estatus === "SUCCESS") {
+            document.getElementById('lbl-tasa-bcv').innerText = `${respuesta.tasaDolar.toFixed(2)} Bs/$`;
+            document.getElementById('lbl-caja-id').innerText = INQUILINO_CONFIG.SUCURSAL_ID;
+
+            const miSede = respuesta.sucursales.find(s => s.ID_Sucursal === INQUILINO_CONFIG.SUCURSAL_ID);
+            if (miSede) {
+              document.getElementById('txt-inquilino-bodega').innerText = `MONITOREO: ${miSede.Nombre_Kiosco}`;
+            }
+
+            // 1. Filtrado de Inventario asignado a esta Sede
+            const tBodyInv = document.getElementById('tabla-inventario-inquilino');
+            tBodyInv.innerHTML = "";
+            const misArticulos = (respuesta.sucursales || []).filter(p => p.ID_Producto && p.Sucursal_Asignada === INQUILINO_CONFIG.SUCURSAL_ID);
+
+            if(misArticulos.length === 0) {
+              tBodyInv.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No tienes productos en estante.</td></tr>`;
+            } else {
+              misArticulos.forEach(item => {
+                const alertaStock = item.Stock_Actual <= item.Minimo_Critico;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td>${item.Codigo_Barras ? item.Codigo_Barras.toString().slice(-4) : '----'}</td>
+                  <td>${item.Descripcion_Articulo || 'Sin Nombre'}</td>
+                  <td>${item.Modulo_Destino || 'General'}</td>
+                  <td style="text-align:right;">$ ${parseFloat(item.Precio_Venta_USD).toFixed(2)}</td>
+                  <td style="text-align:center; color:${alertaStock ? 'var(--neon-crimson)' : 'var(--text-main)'};">${item.Stock_Actual}</td>
+                  <td style="color:${alertaStock ? 'var(--neon-crimson)' : 'var(--neon-emerald)'}; font-weight:800;">${alertaStock ? '⚠️ RECOMPRAR' : '✅ REPLETO'}</td>
+                `;
+                tBodyInv.appendChild(tr);
+              });
+            }
+
+            // 2. Filtrado contable transaccional de ventas de esta Sede
+            const tBodyVentas = document.getElementById('tabla-ventas-inquilino');
+            tBodyVentas.innerHTML = "";
+            const misVentas = (respuesta.ventasHistoricas || []).filter(v => v.ID_Sucursal === INQUILINO_CONFIG.SUCURSAL_ID);
+
+            if(misVentas.length === 0) {
+              tBodyVentas.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No hay registros de ventas el día de hoy.</td></tr>`;
+            } else {
+              misVentas.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td>${v.ID_Factura}</td>
+                  <td>${v.ID_Ticket}</td>
+                  <td>${v.Modulo_Venta}</td>
+                  <td>${new Date(v.Fecha_Hora).toLocaleTimeString()}</td>
+                  <td style="text-align:right; color:var(--neon-cyan); font-weight:700;">$ ${parseFloat(v.Total_USD).toFixed(2)}</td>
+                  <td style="text-align:right; color:var(--neon-amber); font-weight:700;">${parseFloat(v.Total_VES).toFixed(2)} Bs</td>
+                  <td>${v.Metodo_Pago}</td>
+                `;
+                tBodyVentas.appendChild(tr);
+              });
+            }
+          }
+        }).catch(err => console.log("Servidor ocupado. Sincronizando datos..."));
+    }
+
+    function forzarRefrescoDeDatos() {
+      solicitudDescargaFiltradaInquilino();
+      alert("SISTEMA INQUILINO: Datos de sucursal actualizados.");
+    }
+  </script>
+</body>
+</html>

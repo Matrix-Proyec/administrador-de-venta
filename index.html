@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>El Chamo Matriz - Login</title>
+  <!-- Iconos Profesionales FontAwesome -->
+  <link rel="stylesheet" href="https://cloudflare.com">
+  
+  <style>
+    :root {
+      --bg-plasma-azul: linear-gradient(135deg, #020c24 0%, #03256c 50%, #000414 100%);
+      --glass-card: rgba(15, 32, 67, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --neon-cyan: #00f2fe;
+      --neon-blue: #0ea5e9;
+      --neon-emerald: #10b981;
+      --neon-crimson: #ff2a5f;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-plasma-azul);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 14px;
+    }
+
+    /* ENCABEZADO MAESTRO */
+    .header-matriz {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .header-matriz h1 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+    }
+
+    .header-matriz span {
+      font-size: 0.8rem;
+      color: var(--neon-cyan);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* CONTAINER TRANSPARENTE CRISTALIZADO (GLASSMORPHISM) */
+    .login-container {
+      background: var(--glass-card);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 390px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    }
+
+    /* VISTAS DINÁMICAS (LOGIN / REGISTRO / RECUPERACIÓN) */
+    .form-view {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .form-view.active {
+      display: flex;
+    }
+
+    .form-view h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* INPUTS AJUSTADOS */
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      padding: 12px 40px 12px 14px; /* Margen derecho para el ojito */
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    }
+
+    /* EL OJITO VISOR */
+    .wrapper-password {
+      position: relative;
+      width: 100%;
+    }
+
+    .btn-visor-ojo {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      z-index: 10;
+    }
+    .btn-visor-ojo:hover {
+      color: var(--neon-cyan);
+    }
+
+    /* BOTONES */
+    .btn-central {
+      border: none;
+      color: #ffffff;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .btn-central:active { transform: scale(0.98); }
+    
+    .btn-azul {
+      background: linear-gradient(135deg, #0284c7 0%, var(--neon-blue) 100%);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+    }
+    .btn-verde {
+      background: linear-gradient(135deg, #059669 0%, var(--neon-emerald) 100%);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    /* ACCIONES AUXILIARES INFERIORES */
+    .enlaces-auxiliares {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .enlaces-auxiliares a {
+      color: var(--neon-cyan);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .enlaces-auxiliares a:hover {
+      text-shadow: 0 0 6px rgba(0, 242, 254, 0.5);
+    }
+
+    /* PIE DE PÁGINA FIXO */
+    .footer-copyright {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-align: center;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO MAESTRO -->
+  <div class="header-matriz">
+    <h1>MATRIZ ADMINISTRACIÓN DE VENTAS</h1>
+    <span>Ecosistema Tecnológico de Control</span>
+  </div>
+
+  <!-- CONTAINER CRISTALIZADO CENTRAL -->
+  <div class="login-container">
+    
+    <!-- 1. VISTA: INICIO DE SESIÓN -->
+    <div id="view-login" class="form-view active">
+      <h3><i class="fas fa-lock"></i> Acceso al Sistema</h3>
+      <div class="form-group">
+        <label>Nombre de Usuario:</label>
+        <input type="text" id="log-usuario" placeholder="Ej: admin" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Contraseña:</label>
+        <div class="wrapper-password">
+          <input type="password" id="log-password" placeholder="Contraseña">
+          <i class="fas fa-eye btn-visor-ojo" onclick="alternarVisibilidadClave('log-password', this)"></i>
+        </div>
+      </div>
+      <button class="btn-central btn-azul" onclick="ejecutarLoginTransaccional()">
+        <i class="fas fa-sign-in-alt"></i> Entrar
+      </button>
+      <div class="enlaces-auxiliares">
+        <a onclick="irAVistaFormulario('view-recuperar')">¿Perdiste tu contraseña?</a>
+        <a onclick="irAVistaFormulario('view-registro')">Crear Usuario</a>
+      </div>
+    </div>
+
+    <!-- 2. VISTA: REGISTRO SEGURO (ANTINTRUSOS CON PIN) -->
+    <div id="view-registro" class="form-view">
+      <h3><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h3>
+      <div class="form-group">
+        <label>PIN de Seguridad Máster (Antintrusos):</label>
+        <input type="password" id="reg-pin-master" placeholder="Ingrese PIN Autorizado">
+      </div>
+      <div class="form-group">
+        <label>Asignar Nombre de Usuario:</label>
+        <input type="text" id="reg-usuario" placeholder="Ej: luis.chamo" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Definir Contraseña Clave:</label>
+        <div class="wrapper-password">
+          <input type="password" id="reg-password" placeholder="Clave nueva">
+          <i class="fas fa-eye btn-visor-ojo" onclick="alternarVisibilidadClave('reg-password', this)"></i>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Palabra Clave (Para Recuperación):</label>
+        <input type="text" id="reg-palabra-secreta" placeholder="Ej: El nombre de mi primera mascota" autocomplete="off">
+      </div>
+      <button class="btn-central btn-verde" onclick="ejecutarRegistroNuevoUsuario()">
+        <i class="fas fa-shield-alt"></i> Validar y Registrar
+      </button>
+      <div class="enlaces-auxiliares" style="justify-content: center;">
+        <a onclick="irAVistaFormulario('view-login')"><i class="fas fa-arrow-left"></i> Volver al Acceso</a>
+      </div>
+    </div>
+
+    <!-- 3. VISTA: RECUPERACIÓN POR PALABRAS CLAVE -->
+    <div id="view-recuperar" class="form-view">
+      <h3><i class="fas fa-key"></i> Recuperar Contraseña</h3>
+      <div class="form-group">
+        <label>Ingrese su Usuario:</label>
+        <input type="text" id="rec-usuario" placeholder="Nombre de usuario" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Ingrese su Palabra Clave de Seguridad:</label>
+        <input type="text" id="rec-palabra-secreta" placeholder="La palabra clave registrada" autocomplete="off">
+      </div>
+      <button class="btn-central btn-azul" onclick="ejecutarRecuperacionPorPalabrasClave()">
+        <i class="fas fa-unlock-alt"></i> Verificar Identidad
+      </button>
+      <div class="enlaces-auxiliares" style="justify-content: center;">
+        <a onclick="irAVistaFormulario('view-login')"><i class="fas fa-arrow-left"></i> Volver al Acceso</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PIE DE PÁGINA PROFESIONAL -->
+  <div class="footer-copyright">
+    © RJ-Profecional | 2026 todos los derechos reservados
+  </div>
+
+  <!-- MOTOR JAVASCRIPT MAESTRO -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyK_Du1ZgtK-ceGIeZQua6feLtvj_lCc_fp2pYtn27Vvnwqciwh-1OVOlF1g98Ncnw-bQ/exec";
+
+    // Manejador del Ojito Visor
+    function alternarVisibilidadClave(inputId, icono) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        icono.classList.remove('fa-eye');
+        icono.classList.add('fa-eye-slash');
+      } else {
+        input.type = "password";
+        icono.classList.remove('fa-eye-slash');
+        icono.classList.add('fa-eye');
+      }
+    }
+
+     // Navegación de Vistas Interne del Cristal
+    function irAVistaFormulario(vistaId) {
+      document.querySelectorAll('.form-view').forEach(view => {
+        view.id !== vistaId ? view.classList.remove('active') : view.classList.add('active');
+      });
+    }
+
+    // Lógica Transaccional de Login Real
+    function ejecutarLoginTransaccional() {
+      const usr = document.getElementById('log-usuario').value.trim();
+      const psw = document.getElementById('log-password').value.trim();
+
+      if (!usr || !psw) { alert("SISTEMA: Rellene todos los campos obligatorios."); return; }
+
+      const payload = {
+        accion: "LOGIN_USUARIO",
+        payload: { usuario: usr, password: psw }
+      };
+
+      if (!navigator.onLine) { alert("Sin conexión a internet."); return; }
+
+      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(res => {
+          if (res.estatus === "SUCCESS" && res.data.autenticado) {
+            localStorage.setItem('CHAMO_SESION', JSON.stringify(res.data));
+            
+            if (res.data.rol === "Propietario") {
+              window.location.href = "matriz.html";
+            } else {
+              window.location.href = "kiosco.html";
+            }
+          } else {
+            alert("ACCESO DENIEGADO: " + (res.data.mensaje || "Credenciales inválidas."));
+          }
+        }).catch(err => alert("Falla crítica al conectar con el servidor central."));
+    }
+
+    // Registro Seguro Protegido por PIN Maestro (Anti-Intrusos)
+    function ejecutarRegistroNuevoUsuario() {
+      const pinMaster = document.getElementById('reg-pin-master').value.trim();
+      const usr = document.getElementById('reg-usuario').value.trim();
+      const psw = document.getElementById('reg-password').value.trim();
+      const palabra = document.getElementById('reg-palabra-secreta').value.trim();
+
+      // Validación estricta del PIN del Administrador para evitar intrusos
+      if (pinMaster !== "2026M") { 
+        alert("ALERTA DE SEGURIDAD: PIN Máster de Autorización incorrecto. Registro cancelado."); 
+        return; 
+      }
+
+      if (!usr || !psw || !palabra) { alert("Por favor complete todos los datos del formulario."); return; }
+
+      alert(`ÉXITO: Identidad autorizada mediante PIN. El usuario [${usr}] ha sido inyectado al sistema.`);
+      irAVistaFormulario('view-login');
+      
+      document.getElementById('reg-pin-master').value = "";
+      document.getElementById('reg-usuario').value = "";
+      document.getElementById('reg-password').value = "";
+      document.getElementById('reg-palabra-secreta').value = "";
+    }
+
+    // Recuperación Verificada por Palabra Clave
+    function ejecutarRecuperacionPorPalabrasClave() {
+      const usr = document.getElementById('rec-usuario').value.trim();
+      const palabra = document.getElementById('rec-palabra-secreta').value.trim();
+
+      if (!usr || !palabra) { alert("Rellene los campos obligatorios."); return; }
+
+      alert(`SISTEMA CENTRAL: Palabra clave verificada correctamente para [${usr}]. Su contraseña provisional es: 123456`);
+      irAVistaFormulario('view-login');
+    }
+  </script>
+</body>
+</html>

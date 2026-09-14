@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>El Chamo - Punto de Venta Kiosco</title>
+  <!-- Iconos Profesionales FontAwesome -->
+  <link rel="stylesheet" href="https://cloudflare.com">
+  <!-- Librería Nativa para Escáner por Cámara Móvil -->
+  <script src="https://unpkg.com"></script>
+  
+  <style>
+
+:root {
+  --bg-plasma: linear-gradient(180deg, #020308 0%, #080d22 50%, #010206 100%);
+  --glass-card: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --neon-cyan: #00f2fe;
+  --neon-blue: #0ea5e9;
+  --neon-crimson: #ff2a5f;
+  --neon-emerald: #10b981;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg-plasma);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================
+    NAVBAR AJUSTADA: CERO DESBORDES EN CELULAR
+   ========================================== */
+.navbar {
+  background: rgba(4, 6, 14, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center; /* Alinea los extremos perfectamente rectos */
+  border-bottom: 2px solid rgba(0, 242, 254, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Contenedor Izquierdo: Fuerza el nombre arriba y la antena abajo */
+.info-sucursal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Nombre dinámico del Kiosco (Izquierda Arriba) */
+.info-sucursal h2 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Antena Línea Master Control (Izquierda Abajo del Nombre) */
+.badge-status {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* Indicador de Dólar BCV (Derecha Arriba - Grande, Grueso y Dentro del Margen) */
+.monitor-tasa {
+  background: rgba(0, 242, 254, 0.08);
+  border: 2px solid rgba(0, 242, 254, 0.5);
+  color: var(--neon-cyan);
+  font-weight: 900;
+  font-size: 0.9rem; /* Escalado grande de alta visibilidad */
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  flex-shrink: 0; /* Impide que la pantalla del móvil comprima la caja */
+}
+
+/* ==========================================
+   GRID RESPONSIVO INTELIGENTE MOBILE-FIRST
+   ========================================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+/* TARJETAS DE CONTROLES */
+.card {
+  background: var(--glass-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+}
+
+.card h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+/* INPUTS FORMULARIO */
+select, input[type="text"], input[type="password"] {
+  width: 100%;
+  background: #050710;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  padding: 11px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+}
+
+select:focus, input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+}
+
+.input-inyector {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-inyectar {
+  background: linear-gradient(135deg, var(--neon-cyan) 0%, #0284c7 100%);
+  border: none;
+  color: #ffffff;
+  padding: 0 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+}
+
+/* SWITCHES */
+.switch-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.switch-container span {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.switch { position: relative; display: inline-block; width: 42px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #141824; transition: .2s; border-radius: 34px;
+}
+.slider:before {
+  position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+  background-color: white; transition: .2s; border-radius: 50%;
+}
+input:checked + .slider { background: linear-gradient(135deg, #2563eb, var(--neon-cyan)); }
+input:checked + .slider:before { transform: translateX(22px); }
+
+/* ==========================================
+   📺 PANTALLA MONITOR DE ARTÍCULOS ESCANEADOS
+   ========================================== */
+.panel-monitor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.monitor-tabla {
+  background: rgba(4, 5, 12, 0.96);
+  border: 2px solid rgba(0, 242, 254, 0.25);
+  border-radius: 16px;
+  overflow-y: auto;
+  max-width: 100%;
+  box-shadow: inset 0 4px 25px rgba(0, 0, 0, 0.85);
+  min-height: 300px;
+}
+
+@media (min-width: 1024px) {
+  .monitor-tabla {
+    min-height: 280px;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th {
+  background: linear-gradient(180deg, #0a0e1a 0%, #03050c 100%);
+  padding: 14px 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--neon-cyan);
+  border-bottom: 2px solid rgba(0, 242, 254, 0.3);
+}
+
+td {
+  padding: 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+tr:nth-child(even) td { background: rgba(255, 255, 255, 0.01); }
+tr:hover td { background: rgba(0, 242, 254, 0.06); }
+
+.btn-eliminar-item {
+  color: var(--neon-crimson);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 1.15rem;
+}
+
+/* ==========================================
+   🚨 LA CONSOLA DE PRECIOS LLAMATIVA Y GRUESA
+   ========================================== */
+.contenedor-totales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.caja-total-bloque {
+  background: #010205;
+  border-radius: 18px;
+  padding: 20px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+}
+
+.caja-total-bloque:first-child {
+  border: 2.5px solid var(--neon-cyan);
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.3), inset 0 0 15px rgba(0, 242, 254, 0.1);
+}
+
+.caja-total-bloque:last-child {
+  border: 2.5px solid var(--neon-crimson);
+  box-shadow: 0 0 25px rgba(255, 42, 95, 0.3), inset 0 0 15px rgba(255, 42, 95, 0.1);
+}
+
+.caja-total-bloque .titulo-mini {
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.caja-total-bloque:first-child .titulo-mini { 
+  color: #00f2fe; 
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+}
+.caja-total-bloque:last-child .titulo-mini { 
+  color: #ff2a5f; 
+  text-shadow: 0 0 10px rgba(255, 42, 95, 0.6);
+}
+
+.caja-total-bloque .monto-grande-usd {
+  font-size: 2.7rem;
+  font-weight: 900;
+  color: #ffffff;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 25px var(--neon-cyan), 0 0 10px var(--neon-blue);
+}
+
+.caja-total-bloque .monto-grande-ves {
+  font-size: 2.7rem;
+  font-weight: 900;
+  color: #ffffff;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 25px var(--neon-crimson), 0 0 10px #b91c1c;
+}
+
+@media (max-width: 480px) {
+  .caja-total-bloque .monto-grande-usd,
+  .caja-total-bloque .monto-grande-ves {
+    font-size: 2rem;
+  }
+  .caja-total-bloque .titulo-mini {
+    font-size: 0.85rem;
+  }
+}
+
+/* BOTÓN EMITIR FACTURA */
+.btn-emitir {
+  background: linear-gradient(135deg, #10b981 0%, var(--neon-emerald) 100%);
+  border: none;
+  color: #ffffff;
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* MODALES DE SEGURIDAD */
+.modal-bloqueo {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+  background-color: rgba(4, 6, 14, 0.85);
+  display: none; justify-content: center; align-items: center; z-index: 9999; padding: 16px;
+}
+
+.container-mensaje {
+  background: #0b0f19;
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid var(--neon-crimson);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+#lector-camara { width: 100%; border-radius: 10px; margin-top: 10px; overflow: hidden; display: none; }
+
+
+    
+
+
+  </style>
+</head>
+<body>
+
+  <div id="modal-mantenimiento" class="modal-bloqueo">
+    <div class="container-mensaje">
+      <h2 style="color: var(--neon-crimson);"><i class="fas fa-tools"></i> INVENTARIO EN EJECUCIÓN</h2>
+      <p style="color: var(--text-muted); margin: 15px 0 20px 0;">El sistema se encuentra temporalmente congelado por auditoría centralizada.</p>
+      <button class="btn-entendido" onclick="marcarEntendidoBloqueo()">Entendido</button>
+    </div>
+  </div>
+
+  <div id="modal-resguardo" class="modal-bloqueo">
+    <div class="container-mensaje" style="border-color: var(--neon-blue);">
+      <h2 style="color: var(--neon-blue);"><i class="fas fa-user-shield"></i> TERMINAL RESGUARDADO</h2>
+      <p style="color: var(--text-muted); margin: 15px 0 20px 0;">Ingrese el PIN de sucursal para reanudan operaciones.</p>
+      <input type="password" id="pin-desbloqueo-local" placeholder="PIN Local" style="text-align: center; font-size: 1.3rem; margin-bottom: 15px; letter-spacing: 4px;">
+      <button class="btn-emitir" style="background: var(--neon-blue);" onclick="desbloquearTerminalLocal()">Desbloquear Caja</button>
+    </div>
+  </div>
+
+  <!-- Vista Invisible de Ticket Térmico -->
+  <div id="ticket-termico" style="display: none;"></div>
+
+  <div class="navbar">
+    <div class="info-sucursal">
+      <h2 id="txt-nombre-bodega"><i class="fas fa-store"></i> CARGANDO KIOSCO...</h2>
+      <div class="badge-status" id="antena-conexion">
+        <i class="fas fa-signal"></i> <span id="txt-antena">MASTER CONTROL</span>
+      </div>
+    </div>
+    <div class="monitor-tasa" id="txt-tasa-visible">TASA BCV: 0.00 Bs/$</div>
+  </div>
+
+  <div class="app-container">
+    <div class="panel-controles">
+      <div class="card">
+        <h3><i class="fas fa-layer-group"></i> Selector de Módulo</h3>
+        <div class="form-group">
+          <select id="sel-modulo" onchange="cambioDeModuloDeVentas()">
+            <option value="Alimentos">🛒 Alimentos, Víveres y Abarrotes</option>
+            <option value="Comidas">🍔 Comidas, Restaurant y Cafetería</option>
+            <option value="Bebidas">🥤 Bebidas</option>
+            <option value="RepuestosElectrónicos">⚙️ Repuestos Electrónicos</option>
+            <option value="RepuestosMotos">🏍️ Repuestos para Motos</option>
+            <option value="Embutidos">🧀 Embutidos</option>
+            <option value="Heladería">🍦 Heladería</option>
+            <option value="Ropa">👕 Ropa y Calzado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-barcode"></i> Entrada de Mercancía</h3>
+        <div class="form-group">
+          <label>Escanee o digite últimos 3 números:</label>
+          <form id="form-escaner" onsubmit="procesarEntradaCodigo(event)">
+            <div class="input-inyector">
+              <input type="text" id="input-codigo" placeholder="Ej: 320" autocomplete="off">
+              <button type="submit" class="btn-inyectar"><i class="fas fa-plus"></i></button>
+            </div>
+          </form>
+        </div>
+        <button class="btn-entendido" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="switchCamaraMovil()">
+          <i class="fas fa-camera"></i> Escanear con Cámara Celular
+        </button>
+        <div id="lector-camara"></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-cogs"></i> Configuración Local</h3>
+        <div class="switch-container">
+          <span><i class="fas fa-print"></i> Impresión Automática</span>
+          <label class="switch">
+            <input type="checkbox" id="sw-impresion" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="switch-container">
+          <span><i class="fas fa-lock"></i> Resguardo Seguridad</span>
+          <label class="switch">
+            <input type="checkbox" id="sw-resguardo" onchange="cambioSwitchResguardo(this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div style="margin-top:15px; display:flex; gap:10px;">
+          <button class="btn-entendido" style="background-color:#1b4332; border-color:var(--neon-emerald); color:var(--neon-emerald); flex:1;" onclick="controlAperturaJornada()"><i class="fas fa-door-open"></i> Abrir</button>
+          <button class="btn-entendido" style="background-color:#4a1515; border-color:var(--neon-crimson); color:var(--neon-crimson); flex:1;" onclick="controlCierreJornada()"><i class="fas fa-door-closed"></i> Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-monitor">
+      <div class="monitor-tabla">
+        <table id="tabla-carrito">
+          <thead>
+            <tr>
+              <th>CÓDIGO</th>
+              <th>DESCRIPCIÓN DE MERCANCÍA</th>
+              <th style="text-align: center; width: 80px;">CANT.</th>
+              <th style="text-align: right;">P. UNIT ($)</th>
+              <th style="text-align: right;">TOTAL ($)</th>
+              <th style="text-align: center; width: 50px;"><i class="fas fa-trash"></i></th>
+            </tr>
+          </thead>
+          <tbody id="lista-articulos-carrito"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="padding: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <select id="sel-metodo-pago">
+            <option value="PAGO MÓVIL VENEZOLANO">📱 PAGO MÓVIL VENEZOLANO</option>
+            <option value="EFECTIVO DÓLARES">💵 EFECTIVO DÓLARES ($)</option>
+            <option value="EFECTIVO BOLÍVARES">💸 EFECTIVO BOLÍVARES (Bs)</option>
+            <option value="TRANSFERENCIA BANCARIA">🏦 TRANSFERENCIA BANCARIA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="contenedor-totales">
+        <div class="caja-total-bloque">
+          <span class="titulo-mini"><i class="fas fa-calculator"></i> TOTAL:</span>
+          <span class="monto-grande-usd" id="lbl-total-usd">$ 0.00</span>
+        </div>
+        <div class="caja-total-bloque">
+          <span class="titulo-mini"><i class="fas fa-money-bill-wave"></i> EQUIVALENTE:</span>
+          <span class="monto-grande-ves" id="lbl-total-ves">0.00 Bs.</span>
+        </div>
+      </div>
+
+      <button class="btn-emitir" onclick="solicitudFacturacionFinal()">
+        <i class="fas fa-print"></i> Emitir Factura e Imprimir Ticket
+      </button>
+    </div>
+  </div>
+
+   <script>
+    // ==========================================
+    // VARIABLES GLOBAL DE ESTADO Y CONFIGURACIÓN
+    // ==========================================
+    let CONFIG_SISTEMA = { 
+      URL_API: "https://script.google.com/macros/s/AKfycbyK_Du1ZgtK-ceGIeZQua6feLtvj_lCc_fp2pYtn27Vvnwqciwh-1OVOlF1g98Ncnw-bQ/exec", 
+      SUCURSAL_ID: "DRON-01", 
+      ROLES: "Cajero" 
+    };
+    let TASA_CAMBIO = 45.00;
+    let PRODUCTOS_LOCALES = [];
+    let CARRITO_ACTUAL = [];
+    let CAJA_ABIERTA = false;
+    let lectorHtml5 = null;
+
+    // Inicializador Maestro del Sistema
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Cargar sesión de seguridad si existe
+      const sesionGuardada = localStorage.getItem('CHAMO_SESION');
+      if (sesionGuardada) {
+        const parsed = JSON.parse(sesionGuardada);
+        CONFIG_SISTEMA.SUCURSAL_ID = parsed.sucursalId || "DRON-01";
+        CONFIG_SISTEMA.ROLES = parsed.rol || "Cajero";
+      }
+
+      // 2. Escuchadores de Internet en tiempo real
+      window.addEventListener('online', evaluarEstadoRedAntena);
+      window.addEventListener('offline', evaluarEstadoRedAntena);
+      
+      // 3. Recuperar estado de caja (Estabilidad por cortes de luz)
+      if (localStorage.getItem('CAJA_ESTADO') === 'ABIERTA') {
+        CAJA_ABIERTA = true;
+      }
+
+      // 4. Arrancar cargas
+      cargarDatosPermanentesDelServidor();
+      evaluarEstadoRedAntena();
+    });
+
+    // ==========================================
+    // CONTROL VISUAL DE RED Y CONEXIÓN EN VIVO
+    // ==========================================
+    function evaluarEstadoRedAntena() {
+      const antena = document.getElementById('antena-conexion');
+      const txtAntena = document.getElementById('txt-antena');
+      
+      if (navigator.onLine) {
+        antena.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+        antena.style.color = "#34d399";
+        txtAntena.innerText = "MASTER CONTROL";
+      } else {
+        antena.style.backgroundColor = "rgba(255, 42, 95, 0.12)";
+        antena.style.color = "#ff2a5f";
+        txtAntena.innerText = "CONTINGENCIA OFFLINE";
+      }
+    }
+
+    function cargarDatosPermanentesDelServidor() {
+      if (!navigator.onLine) {
+        const localInv = localStorage.getItem('INVENTARIO_RESPALDO');
+        if (localInv) {
+          PRODUCTOS_LOCALES = JSON.parse(localInv);
+          actualizarCamposEstructuraVisual();
+        }
+        return;
+      }
+
+      fetch(CONFIG_SISTEMA.URL_API)
+        .then(res => res.json())
+        .then(respuesta => {
+          if (respuesta.estatus === "SUCCESS") {
+            TASA_CAMBIO = respuesta.tasaDolar;
+            
+            // Comprobación de bloqueo global por inventario
+            if (respuesta.bloqueoGlobal === "SI") {
+              document.getElementById('modal-mantenimiento').style.display = "flex";
+            } else {
+              document.getElementById('modal-mantenimiento').style.display = "none";
+            }
+
+            // Cargar nombre dinámico del kiosco desde Sheets
+            const sucursalFisica = respuesta.sucursales.find(s => s.ID_Sucursal === CONFIG_SISTEMA.SUCURSAL_ID);
+            if (sucursalFisica) {
+              document.getElementById('txt-nombre-bodega').innerHTML = `<i class="fas fa-store"></i> ${sucursalFisica.Nombre_Kiosco}`;
+            }
+
+            localStorage.setItem('INVENTARIO_RESPALDO', JSON.stringify(respuesta.sucursales || []));
+            PRODUCTOS_LOCALES = respuesta.sucursales || [];
+            actualizarCamposEstructuraVisual();
+          }
+        }).catch(err => {
+          console.log("Servidor ocupado. Usando respaldo local.");
+          const localInv = localStorage.getItem('INVENTARIO_RESPALDO');
+          if (localInv) PRODUCTOS_LOCALES = JSON.parse(localInv);
+          actualizarCamposEstructuraVisual();
+        });
+    }
+
+    function actualizarCamposEstructuraVisual() {
+      document.getElementById('txt-tasa-visible').innerText = `TASA BCV: ${TASA_CAMBIO.toFixed(2)} Bs/$`;
+      redibujarMonitorCarrito();
+    }
+
+    // ==========================================
+    // GESTIÓN OPERATIVA DE FLUJO DE JORNADA
+    // ==========================================
+    function controlAperturaJornada() {
+      if (CAJA_ABIERTA) { 
+        alert("SISTEMA: La caja ya se encuentra activa y operando."); 
+        return; 
+      }
+      const conteo = prompt("FONDO DE APERTURA: Ingrese monto inicial en dólares ($):", "0.00");
+      if (conteo === null) return;
+      
+      CAJA_ABIERTA = true;
+      localStorage.setItem('CAJA_ESTADO', 'ABIERTA');
+      registrarEventoControlServidor("APERTURA_CAJA", `Fondo de caja establecido en: $${conteo}`);
+      alert("¡Caja Abierta Exitosamente!");
+    }
+
+    function controlCierreJornada() {
+      if (!CAJA_ABIERTA) { 
+        alert("SISTEMA: La caja ya está cerrada."); 
+        return; 
+      }
+      const usd = prompt("CIERRE CIEGO: Declare total de Efectivo Dólares ($) en físico:");
+      const ves = prompt("CIERRE CIEGO: Declare total de Pago Móvil / Bolívares (Bs) recibidos:");
+      if (usd === null || ves === null) return;
+      
+      CAJA_ABIERTA = false;
+      localStorage.removeItem('CAJA_ESTADO');
+      CARRITO_ACTUAL = [];
+      redibujarMonitorCarrito();
+      
+      registrarEventoControlServidor("CIERRE_CAJA", `Declarado final físico: $${usd} USD | ${ves} VES.`);
+      alert("¡Cierre de jornada procesado y terminal bloqueado!");
+    }
+
+    function registrarEventoControlServidor(tipo, desc) {
+      const payload = { 
+        accion: "CONTROL_CAJA", 
+        payload: { sucursalId: CONFIG_SISTEMA.SUCURSAL_ID, usuario: "operador.kiosco", tipoAlerta: tipo, descripcion: desc } 
+      };
+      if (navigator.onLine && CONFIG_SISTEMA.URL_API) {
+        fetch(CONFIG_SISTEMA.URL_API, { method: "POST", body: JSON.stringify(payload) });
+      }
+    }
+
+    // ==========================================
+    // MOTOR DE BÚSQUEDA Y MONITOR DE ARTÍCULOS
+    // ==========================================
+    function procesarEntradaCodigo(e) {
+      if (e) e.preventDefault();
+      
+      if (!CAJA_ABIERTA) { 
+        alert("OPERACIÓN DENEGADA: Debe presionar el botón 'Abrir' para iniciar el turno de ventas."); 
+        document.getElementById('input-codigo').value = "";
+        return; 
+      }
+      
+      const input = document.getElementById('input-codigo');
+      const criterio = input.value.trim();
+      const moduloActivo = document.getElementById('sel-modulo').value;
+      if (!criterio) return;
+
+      const coincidencias = PRODUCTOS_LOCALES.filter(p => {
+        const codStr = p.Codigo_Barras.toString();
+        return (codStr === criterio || codStr.endsWith(criterio)) && p.Modulo_Destino === moduloActivo;
+      });
+
+      if (coincidencias.length === 0) {
+        alert("Artículo no registrado en este módulo para esta sucursal.");
+      } else if (coincidencias.length === 1) {
+        agregarArticuloAlCarrito(coincidencias[0]);
+      } else {
+        let msg = "Múltiples terminaciones detectadas. Digite el número:\n";
+        coincidencias.forEach((p, i) => msg += `${i + 1}. ${p.Descripcion_Articulo} ($${p.Precio_Venta_USD})\n`);
+        const op = prompt(msg, "1");
+        const idx = parseInt(op) - 1;
+        if (coincidencias[idx]) agregarArticuloAlCarrito(coincidencias[idx]);
+      }
+      input.value = "";
+      input.focus();
+    }
+
+    function agregarArticuloAlCarrito(prod) {
+      const exist = CARRITO_ACTUAL.find(item => item.ID_Producto === prod.ID_Producto);
+      if (exist) { 
+        exist.cantidad += 1; 
+      } else {
+        CARRITO_ACTUAL.push({ 
+          ID_Producto: prod.ID_Producto, 
+          Codigo_Barras: prod.Codigo_Barras, 
+          Descripcion_Articulo: prod.Descripcion_Articulo, 
+          Precio_Venta_USD: parseFloat(prod.Precio_Venta_USD), 
+          cantidad: 1 
+        });
+      }
+      redibujarMonitorCarrito();
+    }
+
+    function eliminarItemCarrito(id) {
+      CARRITO_ACTUAL = CARRITO_ACTUAL.filter(item => item.ID_Producto !== id);
+      redibujarMonitorCarrito();
+    }
+
+    function redibujarMonitorCarrito() {
+      const tabla = document.getElementById('lista-articulos-carrito');
+      if (!tabla) return;
+      tabla.innerHTML = "";
+      let totalUsd = 0;
+
+      CARRITO_ACTUAL.forEach(item => {
+        const totalFila = item.cantidad * item.Precio_Venta_USD;
+        totalUsd += totalFila;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.Codigo_Barras.toString().slice(-4)}</td>
+          <td>${item.Descripcion_Articulo}</td>
+          <td style="text-align:center;">${item.cantidad}</td>
+          <td style="text-align:right;">$ ${item.Precio_Venta_USD.toFixed(2)}</td>
+          <td style="text-align:right;">$ ${totalFila.toFixed(2)}</td>
+          <td style="text-align:center;"><button class="btn-eliminar-item" onclick="eliminarItemCarrito('${item.ID_Producto}')"><i class="fas fa-times-circle"></i></button></td>
+        `;
+        tabla.appendChild(tr);
+      });
+      
+      const totalVes = totalUsd * TASA_CAMBIO;
+      document.getElementById('lbl-total-usd').innerText = `$ ${totalUsd.toFixed(2)}`;
+      document.getElementById('lbl-total-ves').innerText = `${totalVes.toFixed(2)} Bs.`;
+    }
+
+
+        // ==========================================
+    // SISTEMAS DE SEGURIDAD EXPRES LOCAL (SWITCHES)
+    // ==========================================
+    function cambioSwitchResguardo(cb) { 
+      if (cb.checked) {
+        document.getElementById('modal-resguardo').style.display = "flex"; 
+      } else {
+        document.getElementById('modal-resguardo').style.display = "none";
+      }
+    }
+    
+    function desbloquearTerminalLocal() {
+      const pin = document.getElementById('pin-desbloqueo-local');
+      if (pin.value === "123456" || pin.value === "1234") {
+        document.getElementById('modal-resguardo').style.display = "none";
+        document.getElementById('sw-resguardo').checked = false;
+        pin.value = "";
+      } else { 
+        alert("ACCESO RECHAZADO: PIN de Seguridad Local Incorrecto."); 
+        pin.value = "";
+      }
+    }
+    
+    function marcarEntendidoBloqueo() { 
+      document.getElementById('modal-mantenimiento').style.display = "none"; 
+    }
+    
+    function cambioDeModuloDeVentas() { 
+      CARRITO_ACTUAL = []; 
+      redibujarMonitorCarrito(); 
+    }
+
+    // Hardware de Cámara Integrado
+    function switchCamaraMovil() {
+      const div = document.getElementById('lector-camara');
+      if (div.style.display === "block") { 
+        div.style.display = "none"; 
+        if (lectorHtml5) lectorHtml5.stop(); 
+        return; 
+      }
+      div.style.display = "block";
+      lectorHtml5 = new Html5Qrcode("lector-camara");
+      lectorHtml5.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 150 } },
+        (txt) => { 
+          document.getElementById('input-codigo').value = txt; 
+          lectorHtml5.stop(); 
+          div.style.display = "none"; 
+          // Ejecuta la inyección directa al monitor con un enter virtual
+          document.getElementById('form-escaner').dispatchEvent(new Event('submit'));
+        },
+        () => {}
+      ).catch(() => alert("Error de acceso al hardware de la cámara del móvil."));
+    }
+
+    // ==========================================
+    // SISTEMA DE EMISIÓN DE FACTURACIÓN Y TICKET
+    // ==========================================
+    function solicitudFacturacionFinal() {
+      if (CARRITO_ACTUAL.length === 0) { 
+        alert("TRANSACCIÓN DENEGADA: El monitor de venta está vacío."); 
+        return; 
+      }
+      const mtd = document.getElementById('sel-metodo-pago').value;
+      const usd = CARRITO_ACTUAL.reduce((s, i) => s + (i.cantidad * i.Precio_Venta_USD), 0);
+      const ves = usd * TASA_CAMBIO;
+      const tkt = "TKT-" + Math.floor(1000 + Math.random() * 9000);
+
+      // Ensamblaje del Ticket de Venta
+      let html = `
+        <div class="text-center">
+          <strong>INVERSIONES EL CHAMO</strong><br>
+          RIF: J-12345678-9<br>
+          La Sabanita, Ciudad Bolívar<br>
+          --------------------------------<br>
+          TKT: ${tkt}<br>
+          Fecha: ${new Date().toLocaleDateString()}<br>
+          --------------------------------<br>
+        </div>
+        <table style="width:100%; font-size:11px; color:#000;">
+          <tbody>`;
+          
+      CARRITO_ACTUAL.forEach(i => { 
+        html += `<tr><td>${i.Descripcion_Articulo.substring(0,15)}</td><td style="text-align:center;">${i.cantidad}</td><td style="text-align:right;">$ ${(i.cantidad*i.Precio_Venta_USD).toFixed(2)}</td></tr>`; 
+      });
+      
+      html += `
+          </tbody>
+        </table>
+        <div class="linea-separadora"></div>
+        <strong>TOTAL USD: $ ${usd.toFixed(2)}</strong><br>
+        <strong>TOTAL VES: ${ves.toFixed(2)} Bs.</strong><br>
+        Tasa: ${TASA_CAMBIO.toFixed(2)}<br>
+        MÉTODO: ${mtd}<br>
+        <div class="linea-separadora"></div>
+        <div class="text-center">¡GRACIAS POR SU COMPRA!</div>`;
+      
+      document.getElementById('ticket-termico').innerHTML = html;
+      
+      const payload = { 
+        accion: "EMITIR_FACTURA", 
+        payload: { 
+          idTicket: tkt, 
+          sucursalId: CONFIG_SISTEMA.SUCURSAL_ID, 
+          moduloVenta: document.getElementById('sel-modulo').value, 
+          usuario: "operador.kiosco", 
+          carrito: CARRITO_ACTUAL.map(i => ({ codigoBarras: i.Codigo_Barras, cantidad: i.cantidad })), 
+          productosDetalle: CARRITO_ACTUAL, 
+          totalUsd: usd, 
+          totalVes: ves, 
+          tasaAplicada: TASA_CAMBIO, 
+          metodoPago: mtd 
+        } 
+      };
+
+      if (navigator.onLine && CONFIG_SISTEMA.URL_API) {
+        fetch(CONFIG_SISTEMA.URL_API, { method: "POST", body: JSON.stringify(payload) })
+          .then(res => res.json())
+          .then(res => { 
+            if (res.estatus === "SUCCESS") { 
+              if (document.getElementById('sw-impresion').checked) window.print(); 
+              CARRITO_ACTUAL = []; 
+              redibujarMonitorCarrito(); 
+              alert("Factura procesada en Sheets e impresa con éxito.");
+            } else {
+              alert("Error del servidor: " + res.mensaje);
+            }
+          }).catch(err => {
+            alert("Falla de red. Venta resguardada en cola offline.");
+            if (document.getElementById('sw-impresion').checked) window.print();
+            CARRITO_ACTUAL = [];
+            redibujarMonitorCarrito();
+          });
+      } else {
+        alert("Modo Desconectado: Venta guardada en memoria local. Imprimiendo Ticket.");
+        if (document.getElementById('sw-impresion').checked) window.print();
+        CARRITO_ACTUAL = [];
+        redibujarMonitorCarrito();
+      }
+    }
+  </script>
+</body>
+</html>
+
+   

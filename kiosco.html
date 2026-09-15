@@ -268,7 +268,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 @media (min-width: 1024px) {
   .monitor-tabla {
-    min-height: 280px;
+    min-height: 460px;
   }
 }
 
@@ -571,8 +571,8 @@ tr:hover td { background: rgba(0, 242, 254, 0.06); }
     // VARIABLES GLOBAL DE ESTADO Y CONFIGURACIÓN
     // ==========================================
     let CONFIG_SISTEMA = { 
-      URL_API: "https://script.google.com/macros/s/AKfycbxMHj2yFMAE3JumDFcwR6AUfgMtja-lgjTA71qQbihGpiCOIDMoidcBfLcGdaDZhTKa/exec", 
-      SUCURSAL_ID: "DRON-01", 
+      URL_API: "https://script.google.com/macros/s/AKfycbyK_Du1ZgtK-ceGIeZQua6feLtvj_lCc_fp2pYtn27Vvnwqciwh-1OVOlF1g98Ncnw-bQ/exec", 
+      SUCURSAL_ID: "ABASTO-01", 
       ROLES: "Cajero" 
     };
     let TASA_CAMBIO = 45.00;
@@ -587,9 +587,13 @@ tr:hover td { background: rgba(0, 242, 254, 0.06); }
       const sesionGuardada = localStorage.getItem('CHAMO_SESION');
       if (sesionGuardada) {
         const parsed = JSON.parse(sesionGuardada);
-        CONFIG_SISTEMA.SUCURSAL_ID = parsed.sucursalId || "DRON-01";
+        CONFIG_SISTEMA.SUCURSAL_ID = parsed.sucursalId || "ABASTO-01";
         CONFIG_SISTEMA.ROLES = parsed.rol || "Cajero";
       }
+        else {
+        CONFIG_SISTEMA.SUCURSAL_ID = "ABASTO-01";
+        CONFIG_SISTEMA.ROLES = "Cajero";
+    }
 
       // 2. Escuchadores de Internet en tiempo real
       window.addEventListener('online', evaluarEstadoRedAntena);
@@ -942,4 +946,4 @@ tr:hover td { background: rgba(0, 242, 254, 0.06); }
 </body>
 </html>
 
-  
+ 
